@@ -1208,10 +1208,15 @@ contains
     site % uvw(3) = sqrt(ONE - mu*mu) * sin(phi)
 
     ! Determine total nu, delayed nu, and delayed neutron fraction
+    if (tot_nu == TOTAL_NU) then
     nu_t = nuc % nu(E_in, EMISSION_TOTAL)
     nu_d = nuc % nu(E_in, EMISSION_DELAYED)
     beta = nu_d / nu_t
-
+    else
+      nu_t = nuc % nu(E_in, EMISSION_PROMPT)
+      nu_d = ZERO
+      beta = ZERO
+    endif
     if (prn() < beta) then
       ! ====================================================================
       ! DELAYED NEUTRON SAMPLED

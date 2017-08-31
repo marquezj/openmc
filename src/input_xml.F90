@@ -982,6 +982,16 @@ contains
       end if
     end if
 
+    ! Check for prompt or total nu run
+    tot_nu = TOTAL_NU
+    if (check_for_node(root, "tot_nu")) then
+      call get_node_value(root, "tot_nu", tot_nu)
+      if (.not. (tot_nu == TOTAL_NU .or. tot_nu == PROMPT_NU)) then
+        call fatal_error("Tot_nu has to be either total or prompt.")
+      endif
+    end if
+
+
     ! Close settings XML file
     call doc % clear()
 
@@ -5313,7 +5323,7 @@ contains
           ! Read nuclide data from HDF5
           group_id = open_group(file_id, name)
           call nuclides(i_nuclide) % from_hdf5(group_id, nuc_temps(i_nuclide), &
-               temperature_method, temperature_tolerance, master)
+               temperature_method, temperature_tolerance, master, tot_nu)
           call close_group(group_id)
           call file_close(file_id)
 

@@ -408,6 +408,11 @@ module constants
        DIFF_NUCLIDE_DENSITY = 2, &
        DIFF_TEMPERATURE = 3
 
+  ! Prompt method constants
+  integer, parameter :: &
+       TOTAL_NU  = 1, &
+       PROMPT_NU = 2
+
   ! ============================================================================
   ! RANDOM NUMBER STREAM CONSTANTS
 

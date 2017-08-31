@@ -170,13 +170,14 @@ module nuclide_header
   end subroutine nuclide_clear
 
   subroutine nuclide_from_hdf5(this, group_id, temperature, method, tolerance, &
-                               master)
+                               master, tot_nu)
     class(Nuclide),   intent(inout) :: this
     integer(HID_T),   intent(in)    :: group_id
     type(VectorReal), intent(in)   :: temperature ! list of desired temperatures
     integer,          intent(inout) :: method
     real(8),          intent(in)    :: tolerance
     logical,          intent(in)    :: master     ! if this is the master proc
+    integer,          intent(in)    :: tot_nu
 
     integer :: i
     integer :: i_closest
@@ -457,12 +458,13 @@ module nuclide_header
     end if
 
     ! Create derived cross section data
-    call this % create_derived()
+    call this % create_derived(tot_nu)
 
   end subroutine nuclide_from_hdf5
 
-  subroutine nuclide_create_derived(this)
+  subroutine nuclide_create_derived(this, tot_nu)
     class(Nuclide), intent(inout) :: this
+    integer,        intent(in)    :: tot_nu
 
     integer :: i, j, k
     integer :: t
@@ -597,10 +599,17 @@ module nuclide_header
     ! Calculate nu-fission cross section
     do t = 1, n_temperature
       if (this % fissionable) then
+        if (tot_nu == TOTAL_NU) then
         do i = 1, size(this % sum_xs(t) % fission)
           this % sum_xs(t) % nu_fission(i) = this % nu(this % grid(t) % energy(i), &
                EMISSION_TOTAL) * this % sum_xs(t) % fission(i)
         end do
+        else
+          do i = 1, size(this % sum_xs(t) % fission)
+            this % sum_xs(t) % nu_fission(i) = this % nu(this % grid(t) % energy(i), &
+                 EMISSION_PROMPT) * this % sum_xs(t) % fission(i)
+          end do
+        endif
       else
         this % sum_xs(t) % nu_fission(:) = ZERO
       end if

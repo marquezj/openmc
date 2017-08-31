@@ -307,6 +307,9 @@ module global
   ! Mode to run in (fixed source, eigenvalue, plotting, etc)
   integer :: run_mode = NONE
 
+  ! Total or prompt nu for prompt method
+  integer :: tot_nu
+
   ! Restart run
   logical :: restart_run = .false.
   integer :: restart_batch
