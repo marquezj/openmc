@@ -38,6 +38,23 @@ private:
 };
 
 //==============================================================================
+//! Distribution of points specified by independent distributions in r,theta,z
+//==============================================================================
+
+class CylindricalIndependent : public SpatialDistribution {
+public:
+  explicit CylindricalIndependent(pugi::xml_node node);
+
+  //! Sample a position from the distribution
+  //! \return Sampled position
+  Position sample() const;
+private:
+  UPtrDist r_;     //!< Distribution of r coordinates
+  UPtrDist theta_; //!< Distribution of theta coordinates
+  UPtrDist z_;     //!< Distribution of z coordinates
+};
+
+//==============================================================================
 //! Uniform distribution of points over a box
 //==============================================================================
 

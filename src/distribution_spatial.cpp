@@ -52,6 +52,55 @@ Position CartesianIndependent::sample() const
 }
 
 //==============================================================================
+// CylindricalIndependent implementation
+//==============================================================================
+
+CylindricalIndependent::CylindricalIndependent(pugi::xml_node node)
+{
+  // Read distribution for r coordinate
+  if (check_for_node(node, "r")) {
+    pugi::xml_node node_dist = node.child("r");
+    r_ = distribution_from_xml(node_dist);
+  } else {
+    // If no distribution was specified, default to a single point at r=0
+    double x[] {0.0};
+    double p[] {1.0};
+    r_ = UPtrDist{new Discrete{x, p, 1}};
+  }
+
+  // Read distribution for theta coordinate
+  if (check_for_node(node, "theta")) {
+    pugi::xml_node node_dist = node.child("theta");
+    theta_ = distribution_from_xml(node_dist);
+  } else {
+    // If no distribution was specified, default to a single point at theta=0
+    double x[] {0.0};
+    double p[] {1.0};
+    theta_ = UPtrDist{new Discrete{x, p, 1}};
+  }
+
+  // Read distribution for z coordinate
+  if (check_for_node(node, "z")) {
+    pugi::xml_node node_dist = node.child("z");
+    z_ = distribution_from_xml(node_dist);
+  } else {
+    // If no distribution was specified, default to a single point at z=0
+    double x[] {0.0};
+    double p[] {1.0};
+    z_ = UPtrDist{new Discrete{x, p, 1}};
+  }
+}
+
+Position CylindricalIndependent::sample() const
+{
+  double r;
+  double theta;
+  r = r_->sample();
+  theta = theta_->sample();
+  return {r*cos(theta), r*sin(theta), z_->sample()};
+}
+
+//==============================================================================
 // SpatialBox implementation
 //==============================================================================
 

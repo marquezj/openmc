@@ -110,7 +110,9 @@ The spatial distribution can be set equal to a sub-class of
 :class:`openmc.stats.Spatial`; common choices are :class:`openmc.stats.Point` or
 :class:`openmc.stats.Box`. To independently specify distributions in the
 :math:`x`, :math:`y`, and :math:`z` coordinates, you can use
-:class:`openmc.stats.CartesianIndependent`.
+:class:`openmc.stats.CartesianIndependent`. To independently specify distributions in the
+:math:`r`, :math:`\theta`, and :math:`z` cylindrical coordinates, you can use
+:class:`openmc.stats.CylindricalIndependent`.
 
 The angular distribution can be set equal to a sub-class of
 :class:`openmc.stats.UnitSphere` such as :class:`openmc.stats.Isotropic`,
