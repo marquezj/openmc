@@ -211,6 +211,70 @@ contains
     xyz(3) = this % z % sample()
   end function cartesian_independent_sample
 
+  subroutine cylindrical_independent_from_xml(this, node)
+    class(CylindricalIndependent), intent(inout) :: this
+    type(XMLNode), intent(in) :: node
+
+    type(XMLNode) :: node_dist
+
+    ! Read distribution for r coordinate
+    if (check_for_node(node, "r")) then
+      node_dist = node % child("r")
+      call distribution_from_xml(this % r, node_dist)
+    else
+      allocate(Discrete :: this % r)
+      select type (dist => this % r)
+      type is (Discrete)
+        allocate(dist % x(1), dist % p(1))
+        dist % x(1) = ZERO
+        dist % p(1) = ONE
+      end select
+    end if
+
+    ! Read distribution for theta coordinate
+    if (check_for_node(node, "theta")) then
+      node_dist = node % child("theta")
+      call distribution_from_xml(this % theta, node_dist)
+    else
+      allocate(Discrete :: this % theta)
+      select type (dist => this % theta)
+      type is (Discrete)
+        allocate(dist % x(1), dist % p(1))
+        dist % x(1) = ZERO
+        dist % p(1) = ONE
+      end select
+    end if
+
+    if (check_for_node(node, "z")) then
+      node_dist = node % child("z")
+      call distribution_from_xml(this % z, node_dist)
+    else
+      allocate(Discrete :: this % z)
+      select type (dist => this % z)
+      type is (Discrete)
+        allocate(dist % x(1), dist % p(1))
+        dist % x(1) = ZERO
+        dist % p(1) = ONE
+      end select
+    end if
+
+  end subroutine cylindrical_independent_from_xml
+
+  function cylindrical_independent_sample(this) result(xyz)
+    class(CylindricalIndependent), intent(in) :: this
+    real(8) :: r
+    real(8) :: theta
+    real(8) :: xyz(3)
+
+    r = this % r % sample()
+    theta = this % theta % sample()
+
+    xyz(1) = r*cos(theta)
+    xyz(2) = r*sin(theta)
+    xyz(3) = this % z % sample()
+
+  end function cylindrical_independent_sample
+
   subroutine spatial_box_from_xml(this, node)
     class(SpatialBox), intent(inout) :: this
     type(XMLNode), intent(in) :: node
