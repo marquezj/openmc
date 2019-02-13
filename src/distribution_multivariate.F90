@@ -87,6 +87,15 @@ module distribution_multivariate
     procedure :: sample => cartesian_independent_sample
   end type CartesianIndependent
 
+  type, extends(SpatialDistribution) :: CylindricalIndependent
+    class(Distribution), allocatable :: r
+    class(Distribution), allocatable :: theta
+    class(Distribution), allocatable :: z
+  contains
+    procedure :: from_xml => cylindrical_independent_from_xml
+    procedure :: sample => cylindrical_independent_sample
+  end type CylindricalIndependent
+
   type, extends(SpatialDistribution) :: SpatialBox
     real(8) :: lower_left(3)
     real(8) :: upper_right(3)

@@ -44,5 +44,6 @@ Spatial Distributions
 
    openmc.stats.Spatial
    openmc.stats.CartesianIndependent
+   openmc.stats.CylindricalIndependent
    openmc.stats.Box
    openmc.stats.Point

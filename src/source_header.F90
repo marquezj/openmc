@@ -91,6 +91,9 @@ contains
         case ('cartesian')
           allocate(CartesianIndependent :: this % space)
 
+        case ('cylindrical')
+          allocate(CylindricalIndependent :: this % space)
+
         case ('box')
           allocate(SpatialBox :: this % space)
 

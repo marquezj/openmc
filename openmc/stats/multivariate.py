@@ -273,6 +273,82 @@ class CartesianIndependent(Spatial):
         element.append(self.z.to_xml_element('z'))
         return element
 
+class CylindricalIndependent(Spatial):
+    """Spatial distribution with independent r, theta, and z distributions.
+
+    This distribution allows one to specify a coordinates whose r-, theta-, and z-
+    components are sampled independently from one another.
+
+    Parameters
+    ----------
+    r : openmc.stats.Univariate
+        Distribution of r-coordinates
+    theta : openmc.stats.Univariate
+        Distribution of theta-coordinates
+    z : openmc.stats.Univariate
+        Distribution of z-coordinates
+
+    Attributes
+    ----------
+    r : openmc.stats.Univariate
+        Distribution of r-coordinates
+    theta : openmc.stats.Univariate
+        Distribution of theta-coordinates
+    z : openmc.stats.Univariate
+        Distribution of z-coordinates
+
+    """
+
+
+    def __init__(self, r, theta, z):
+        super(CylindricalIndependent, self).__init__()
+        self.r = r
+        self.theta = theta
+        self.z = z
+
+    @property
+    def r(self):
+        return self._r
+
+    @property
+    def theta(self):
+        return self._theta
+
+    @property
+    def z(self):
+        return self._z
+
+    @r.setter
+    def r(self, r):
+        cv.check_type('r coordinate', r, Univariate)
+        self._r = r
+
+    @theta.setter
+    def theta(self, theta):
+        cv.check_type('theta coordinate', theta, Univariate)
+        self._theta = theta
+
+    @z.setter
+    def z(self, z):
+        cv.check_type('z coordinate', z, Univariate)
+        self._z = z
+
+    def to_xml_element(self):
+        """Return XML representation of the spatial distribution
+
+        Returns
+        -------
+        element : xml.etree.ElementTree.Element
+            XML element containing spatial distribution data
+
+        """
+        element = ET.Element('space')
+        element.set('type', 'cylindrical')
+        element.append(self.r.to_xml_element('r'))
+        element.append(self.theta.to_xml_element('theta'))
+        element.append(self.z.to_xml_element('z'))
+        return element
+
 
 class Box(Spatial):
     """Uniform distribution of coordinates in a rectangular cuboid.
