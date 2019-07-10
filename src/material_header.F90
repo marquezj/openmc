@@ -52,6 +52,15 @@ module material_header
     character(20), allocatable :: names(:)     ! isotope names
     character(20), allocatable :: sab_names(:) ! name of S(a,b) table
 
+    ! SANS data
+    logical :: hasSANS = .false.         ! number of S(a,b) tables
+    real(8) :: sigma0_SANS = 0.0
+    real(8) :: A1_SANS = 0.0
+    real(8) :: b1_SANS = 0.0
+    real(8) :: A2_SANS = 0.0
+    real(8) :: b2_SANS = 0.0
+    real(8) :: Q0_SANS = 0.0
+
     ! Does this material contain fissionable nuclides? Is it depletable?
     logical :: fissionable = .false.
     logical :: depletable = .false.

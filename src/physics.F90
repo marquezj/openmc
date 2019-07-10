@@ -33,18 +33,48 @@ contains
   subroutine collision(p)
 
     type(Particle), intent(inout) :: p
+    type(Material), pointer :: mat
+    real(8) :: sigma1
+    real(8) :: sigma2
+    real(8) :: sigma3
+    real(8) :: q
+    real(8) :: k0
+    real(8) :: mu
+    real(8) :: r
 
     ! Add to collision counter for particle
     p % n_collision = p % n_collision + 1
 
-    ! Sample nuclide/reaction for the material the particle is in
-    call sample_reaction(p)
+    ! Get pointer to current material
+    mat => materials(p % material)
 
-    ! Display information about collision
-    if (verbosity >= 10 .or. trace) then
-      call write_message("    " // trim(reaction_name(p % event_MT)) &
-           &// " with " // trim(adjustl(nuclides(p % event_nuclide) % name)) &
-           &// ". Energy = " // trim(to_str(p % E)) // " eV.")
+    ! Sample cumulative distribution function
+    if (prn() < material_xs % SANS / material_xs % total ) then
+      k0 = sqrt(p%E/2.072e-3)         ! AA^-1
+      sigma1 = (mat % A1_SANS* mat % Q0_SANS**(mat % b1_SANS + TWO))/(mat % b1_SANS + TWO) 
+      sigma2 = (mat % A2_SANS*      (TWO*k0)**(mat % b2_SANS + TWO))/(mat % b2_SANS + TWO) 
+      sigma3 = (mat % A2_SANS* mat % Q0_SANS**(mat % b2_SANS + TWO))/(mat % b2_SANS + TWO) 
+      r = prn()
+      if ( r < sigma1/(sigma1+sigma2-sigma3) ) then
+         q = (r*(sigma1+sigma2-sigma3)               *(mat % b1_SANS+TWO)/mat % A1_SANS)**(ONE/(mat % b1_SANS+TWO))
+      else
+         q =((r*(sigma1+sigma2-sigma3)-sigma1+sigma3)*(mat % b2_SANS+TWO)/mat % A2_SANS)**(ONE/(mat % b2_SANS+TWO))
+      endif
+      mu = ONE-HALF*(q/k0)**TWO
+
+      p % mu = mu
+      ! change direction of particle
+      p % coord(1) % uvw = rotate_angle(p % coord(1) % uvw, mu)
+    else 
+      ! Sample nuclide/reaction for the material the particle is in
+      call sample_reaction(p)
+
+      ! Display information about collision
+      if (verbosity >= 10 .or. trace) then
+        call write_message("    " // trim(reaction_name(p % event_MT)) &
+             &// " with " // trim(adjustl(nuclides(p % event_nuclide) % name)) &
+             &// ". Energy = " // trim(to_str(p % E)) // " eV.")
+      end if
     end if
 
     ! check for very low energy
@@ -156,9 +186,9 @@ contains
     ! Sample cumulative distribution function
     select case (base)
     case ('total')
-      cutoff = prn() * material_xs % total
+      cutoff = prn() * (material_xs % total - material_xs % SANS)
     case ('scatter')
-      cutoff = prn() * (material_xs % total - material_xs % absorption)
+      cutoff = prn() * (material_xs % total - material_xs % SANS - material_xs % absorption)
     case ('fission')
       cutoff = prn() * material_xs % fission
     end select

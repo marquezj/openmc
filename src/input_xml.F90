@@ -2028,6 +2028,7 @@ contains
     integer :: k              ! loop index
     integer :: n              ! number of nuclides
     integer :: n_sab          ! number of sab tables for a material
+    integer :: n_sans         ! number of SANS parameters for a material
     integer :: i_library      ! index in libraries array
     integer :: index_nuclide  ! index in nuclides
     integer :: index_sab      ! index in sab_tables
@@ -2050,11 +2051,13 @@ contains
     type(XMLNode) :: node_dens
     type(XMLNode) :: node_nuc
     type(XMLNode) :: node_sab
+    type(XMLNode) :: node_sans
     type(XMLNode), allocatable :: node_mat_list(:)
     type(XMLNode), allocatable :: node_nuc_list(:)
     type(XMLNode), allocatable :: node_ele_list(:)
     type(XMLNode), allocatable :: node_macro_list(:)
     type(XMLNode), allocatable :: node_sab_list(:)
+    type(XMLNode), allocatable :: node_sans_list(:)
 
     ! Display output message
     call write_message("Reading materials XML file...", 5)
@@ -2439,6 +2442,56 @@ contains
               mat % i_sab_tables(j) = sab_dict % get(to_lower(name))
             end if
           end do
+        end if
+      end if
+
+      ! =======================================================================
+      ! READ AND PARSE <SANS> TAG FOR SANS DATA
+      if (run_CE) then
+        ! Get pointer list to XML <sans>
+        call get_node_list(node_mat, "sans", node_sans_list)
+
+        n_sans = size(node_sans_list)
+        if (n_sans > 0) then
+          if (n_sans > 1) then
+            call fatal_error("Only one SANS tag can be specified for each material")
+          end if
+          node_sans = node_sans_list(1)
+
+          ! Set SANS flag
+          mat % hasSANS = .true.
+
+          ! Read the parameters for the SANS model
+          if (check_for_node(node_sans, "A1")) then
+            call get_node_value(node_sans, "A1", mat % A1_SANS)
+          else
+            call fatal_error("A1 value is required")
+          end if
+          if (check_for_node(node_sans, "b1")) then
+            call get_node_value(node_sans, "b1", mat % b1_SANS)
+          else
+            call fatal_error("b1 value is required")
+          end if
+          if (check_for_node(node_sans, "A2")) then
+            call get_node_value(node_sans, "A2", mat % A2_SANS)
+          else
+            call fatal_error("A2 value is required")
+          end if
+          if (check_for_node(node_sans, "b2")) then
+            call get_node_value(node_sans, "b2", mat % b2_SANS)
+          else
+            call fatal_error("b2 value is required")
+          end if
+          if (check_for_node(node_sans, "Q0")) then
+            call get_node_value(node_sans, "Q0", mat % Q0_SANS)
+          else
+            call fatal_error("Q0 value is required")
+          end if
+          if (check_for_node(node_sans, "sigma0")) then
+            call get_node_value(node_sans, "sigma0", mat % sigma0_SANS)
+          else
+            call fatal_error("sigma0 value is required")
+          end if
         end if
       end if
 

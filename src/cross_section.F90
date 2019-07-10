@@ -40,12 +40,15 @@ contains
     real(8) :: sab_frac      ! fraction of atoms affected by S(a,b)
     logical :: check_sab     ! should we check for S(a,b) table?
 
+    real(8) :: k0            ! wavenumber
+
     ! Set all material macroscopic cross sections to zero
     material_xs % total          = ZERO
     material_xs % elastic        = ZERO
     material_xs % absorption     = ZERO
     material_xs % fission        = ZERO
     material_xs % nu_fission     = ZERO
+    material_xs % SANS           = ZERO
 
     ! Exit subroutine if material is void
     if (p % material == MATERIAL_VOID) return
@@ -59,6 +62,23 @@ contains
 
       ! Initialize position in i_sab_nuclides
       j = 1
+
+      ! ======================================================================
+      ! CALCULATE SANS CROSS SECTION
+
+      if (mat % hasSANS ) then
+         if (p % E < 1.0) then 
+           ! Avoid computing SANS at high energies.
+           ! XXX Replace this by something more elegant!
+           k0 = sqrt(p%E/2.072e-3)         ! AA^-1
+           material_xs % SANS = mat % sigma0_SANS/(TWO*k0**TWO)* &
+                                ((mat % A1_SANS* mat % Q0_SANS**(mat % b1_SANS + TWO))/(mat % b1_SANS + TWO) &
+                                +(mat % A2_SANS*      (TWO*k0)**(mat % b2_SANS + TWO))/(mat % b2_SANS + TWO) &
+                                -(mat % A2_SANS* mat % Q0_SANS**(mat % b2_SANS + TWO))/(mat % b2_SANS + TWO)) 
+         end if 
+      end if
+      ! Add contributions to material macroscopic total cross section
+      material_xs % total = material_xs % total + material_xs % SANS
 
       ! Add contribution from each nuclide in material
       do i = 1, mat % n_nuclides
@@ -117,7 +137,7 @@ contains
 
         ! Add contributions to material macroscopic scattering cross section
         material_xs % elastic = material_xs % elastic + &
-             atom_density * micro_xs(i_nuclide) % elastic
+             atom_density * micro_xs(i_nuclide) % elastic 
 
         ! Add contributions to material macroscopic absorption cross section
         material_xs % absorption = material_xs % absorption + &
