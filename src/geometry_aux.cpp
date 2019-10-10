@@ -188,6 +188,19 @@ assign_temperatures()
 //==============================================================================
 
 void
+assign_importances()
+{
+  for (auto& c : model::cells) {
+    if (c->imp_.size() > 0) continue;
+    // Use the global default importance.
+    c->imp_.push_back(settings::importance_default);
+    std::cout<<"Coloco valor default para la importancia en la celda\n";
+  }
+}
+
+//==============================================================================
+
+void
 get_temperatures(std::vector<std::vector<double>>& nuc_temps,
   std::vector<std::vector<double>>& thermal_temps)
 {
@@ -248,6 +261,9 @@ void finalize_geometry(std::vector<std::vector<double>>& nuc_temps,
 
   // Assign temperatures to cells that don't have temperatures already assigned
   assign_temperatures();
+
+  // Assign importances to cells that don't have importances already assigned
+  assign_importances();
 
   // Determine desired temperatures for each nuclide and S(a,b) table
   get_temperatures(nuc_temps, thermal_temps);

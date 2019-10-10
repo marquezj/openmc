@@ -81,6 +81,7 @@ extern std::unordered_set<int> statepoint_batch; //!< Batches when state should 
 extern int temperature_method;           //!< method for choosing temperatures
 extern double temperature_tolerance;     //!< Tolerance in [K] on choosing temperatures
 extern double temperature_default;       //!< Default T in [K]
+extern double importance_default;       //!< Default importance
 extern std::array<double, 2> temperature_range;  //!< Min/max T in [K] over which to load xs
 extern int trace_batch;                  //!< Batch to trace particle on
 extern int trace_gen;                    //!< Generation to trace particle on

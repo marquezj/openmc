@@ -280,6 +280,10 @@ public:
   double sqrtkT_ {-1.0};      //!< sqrt(k_Boltzmann * temperature) in eV
   double sqrtkT_last_ {0.0};  //!< last temperature
 
+  // Importance of current cell
+  double imp_ {-1.0};        //!< Importance
+  double imp_last_ {0.0};    //!< Last importance
+
   // Statistical data
   int n_collision_ {0};  //!< number of collisions
 

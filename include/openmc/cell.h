@@ -166,6 +166,10 @@ public:
   //! T. The units are sqrt(eV).
   std::vector<double> sqrtkT_;
 
+  //! \brief Importance(s) within this cell.
+  //!
+  std::vector<double> imp_;
+
   //! Definition of spatial region as Boolean expression of half-spaces
   std::vector<std::int32_t> region_;
   //! Reverse Polish notation for region expression

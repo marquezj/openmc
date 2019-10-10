@@ -192,6 +192,8 @@ Particle::transport()
 
     if (settings::check_overlaps) check_cell_overlap(this);
 
+    std::cout<<coord_[0].r.x<<" "<<coord_[0].r.y<<" "<<coord_[0].r.z<<" "<<imp_<<"\n";
+
     // Calculate microscopic and macroscopic cross sections
     if (material_ != MATERIAL_VOID) {
       if (settings::run_CE) {

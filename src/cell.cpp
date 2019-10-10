@@ -361,6 +361,22 @@ CSGCell::CSGCell(pugi::xml_node cell_node)
     }
   }
 
+  // Read the importance element, if exists
+  if (check_for_node(cell_node, "importance")) {
+    imp_ = get_node_array<double>(cell_node, "importance");
+    imp_.shrink_to_fit();
+
+    // Make sure all importances are non-negative.
+    for (auto IMP : imp_) {
+      if (IMP < 0) {
+        std::stringstream err_msg;
+        err_msg << "Cell " << id_
+                << " was specified with a negative importance";
+        fatal_error(err_msg);
+      }
+    }
+  }
+
   // Read the region specification.
   std::string region_spec;
   if (check_for_node(cell_node, "region")) {

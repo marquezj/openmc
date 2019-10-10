@@ -167,6 +167,13 @@ find_cell_inner(Particle* p, const NeighborList* neighbor_list)
         p->sqrtkT_ = c.sqrtkT_[0];
       }
 
+      p->imp_last_ = p->imp_;
+      if (c.imp_.size() > 1) {
+        p->imp_ = c.imp_[p->cell_instance_];
+      } else {
+        p->imp_ = c.imp_[0];
+      }
+
       return true;
 
     } else if (c.type_ == FILL_UNIVERSE) {

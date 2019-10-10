@@ -95,6 +95,7 @@ std::unordered_set<int> statepoint_batch;
 int temperature_method {TEMPERATURE_NEAREST};
 double temperature_tolerance {10.0};
 double temperature_default {293.6};
+double importance_default {1.0};
 std::array<double, 2> temperature_range {0.0, 0.0};
 int trace_batch;
 int trace_gen;
