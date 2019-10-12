@@ -3,15 +3,17 @@
 #include <array>
 #include <sstream>
 
+#include "openmc/bank.h"
 #include "openmc/cell.h"
 #include "openmc/constants.h"
 #include "openmc/error.h"
 #include "openmc/lattice.h"
+#include "openmc/physics_common.h"
 #include "openmc/settings.h"
 #include "openmc/simulation.h"
 #include "openmc/string_utils.h"
 #include "openmc/surface.h"
-
+#include "openmc/random_lcg.h"
 
 namespace openmc {
 
@@ -167,13 +169,55 @@ find_cell_inner(Particle* p, const NeighborList* neighbor_list)
         p->sqrtkT_ = c.sqrtkT_[0];
       }
 
-      p->imp_last_ = p->imp_;
+      p->imp_last_ = p->imp_ == -1 ? 1.0: p->imp_;
       if (c.imp_.size() > 1) {
         p->imp_ = c.imp_[p->cell_instance_];
       } else {
         p->imp_ = c.imp_[0];
       }
 
+      if (p->imp_> p->imp_last_) {
+        int32_t n;
+        int32_t i;
+        double_t prob;
+
+        //std::cout << "Paso a una celda de mayor importancia: importance splitting\n";
+        //std::cout << p->imp_ << ", " << p->imp_last_ << "\n";
+        n = std::floor(p->imp_/p->imp_last_);
+        prob = p->imp_/p->imp_last_ - n;
+
+        if (prn() < prob ) n++;
+
+        //std::cout << "Meto " << n-1 << " partículas al banco\n" ;
+        //std::cout << "Con peso " << p->wgt_*p->imp_last_/p->imp_ << " \n";
+
+        for (i=0; i<n-1;i++){
+            simulation::secondary_bank.emplace_back();
+            auto& bank {simulation::secondary_bank.back()};
+            bank.particle = p->type_;
+            bank.wgt = p->wgt_*p->imp_last_/p->imp_;
+            bank.r = p->r();
+            bank.u = p->u();
+            bank.E = p->E_;
+            p->n_bank_second_ += 1;
+        }
+        p->wgt_ = p->wgt_*p->imp_last_/p->imp_;
+
+      } else{
+        //std::cout << "Paso a una celda de menor importancia: Russian roulette\n";
+        if (prn() < p->imp_ / p->imp_last_) {
+          p->wgt_last_ = p->wgt_;
+          p->wgt_ = p->wgt_*p->imp_last_/p->imp_;
+          //std::cout<<p->wgt_last_<<" -> "<<p->wgt_<<"\n";
+        } else {
+          //std::cout<<"It's dead, Jim\n";
+          p->wgt_ = 0.;
+          p->wgt_last_ = 0.;
+          p->alive_ = false;
+        }
+      }
+
+      russian_roulette(p);
       return true;
 
     } else if (c.type_ == FILL_UNIVERSE) {
