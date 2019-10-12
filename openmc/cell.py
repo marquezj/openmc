@@ -69,6 +69,8 @@ class Cell(IDManagerMixin):
     temperature : float or iterable of float
         Temperature of the cell in Kelvin.  Multiple temperatures can be given
         to give each distributed cell instance a unique temperature.
+    importance : float 
+        Importance of the cell for variance reduction.
     translation : Iterable of float
         If the cell is filled with a universe, this array specifies a vector
         that is used to translate (shift) the universe.
@@ -97,6 +99,7 @@ class Cell(IDManagerMixin):
         self._rotation = None
         self._rotation_matrix = None
         self._temperature = None
+        self._importance = None
         self._translation = None
         self._paths = None
         self._num_instances = None
@@ -129,6 +132,9 @@ class Cell(IDManagerMixin):
         if self.fill_type == 'material':
             string += '\t{0: <15}=\t{1}\n'.format('Temperature',
                                                   self.temperature)
+        if self.fill_type == 'material':
+            string += '\t{0: <15}=\t{1}\n'.format('Importance',
+                                                  self.importance)
         string += '{: <16}=\t{}\n'.format('\tTranslation', self.translation)
 
         return string
@@ -169,6 +175,10 @@ class Cell(IDManagerMixin):
     @property
     def temperature(self):
         return self._temperature
+
+    @property
+    def importance(self):
+        return self._importance
 
     @property
     def translation(self):
@@ -268,6 +278,21 @@ class Cell(IDManagerMixin):
                     c._temperature = temperature
         else:
             self._temperature = temperature
+
+    @importance.setter
+    def importance(self, importance):
+        # Make sure importance is positive
+        cv.check_type('cell importance', importance, Real)
+        cv.check_greater_than('cell importance', importance, 0.0, True)
+
+        # If this cell is filled with a universe or lattice, propagate
+        # importance to all cells contained. Otherwise, simply assign it.
+        if self.fill_type in ('universe', 'lattice'):
+            for c in self.get_all_cells().values():
+                if c.fill_type == 'material':
+                    c._importance = importance
+        else:
+            self._importance = importance
 
     @region.setter
     def region(self, region):
@@ -512,6 +537,9 @@ class Cell(IDManagerMixin):
             else:
                 element.set("temperature", str(self.temperature))
 
+        if self.importance is not None:
+            element.set("importance", str(self.importance))
+
         if self.translation is not None:
             element.set("translation", ' '.join(map(str, self.translation)))
 
@@ -571,6 +599,11 @@ class Cell(IDManagerMixin):
                 c.temperature = [float(t_i) for t_i in t.split()]
             else:
                 c.temperature = float(t)
+
+        imp = get_text(elem, 'importance')
+        if imp is not None:
+            c.importance = float(imp)
+
         for key in ('temperature', 'rotation', 'translation'):
             value = get_text(elem, key)
             if value is not None:
