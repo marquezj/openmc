@@ -212,11 +212,15 @@ find_cell_inner(Particle* p, const NeighborList* neighbor_list)
         } else {
           //std::cout<<"It's dead, Jim\n";
           p->wgt_ = 0.;
-          p->wgt_last_ = 0.;
+          p->wgt_last_ = 0.;if (simulation::secondary_bank.size() >= 10000)
           p->alive_ = false;
         }
       }
-
+      if (simulation::secondary_bank.size() >= 10000) {
+        fatal_error("The secondary particle bank appears to be growing without "
+        "bound. You are likely running a subcritical multiplication problem "
+        "with k-effective close to or greater than one.");
+      }
       russian_roulette(p);
       return true;
 
