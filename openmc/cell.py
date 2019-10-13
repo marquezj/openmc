@@ -90,7 +90,7 @@ class Cell(IDManagerMixin):
     next_id = 1
     used_ids = set()
 
-    def __init__(self, cell_id=None, name='', fill=None, region=None):
+    def __init__(self, cell_id=None, name='', fill=None, region=None, importance=importance):
         # Initialize Cell class attributes
         self.id = cell_id
         self.name = name
@@ -99,7 +99,7 @@ class Cell(IDManagerMixin):
         self._rotation = None
         self._rotation_matrix = None
         self._temperature = None
-        self._importance = None
+        self._importance = importance
         self._translation = None
         self._paths = None
         self._num_instances = None
