@@ -88,6 +88,29 @@ void sample_neutron_reaction(Particle* p)
   // Save which nuclide particle had collision with
   p->event_nuclide_ = i_nuclide;
 
+    if (prn(p->current_seed()) < (p->macro_xs_.SANS / p->macro_xs_.total)){
+      double k0 = std::sqrt(p->E_/2.072e-3);   // AA^-1
+      const auto& mat {model::materials[p->material_]};
+      double sigma1 = (mat->SANS_A1_*std::pow(mat->SANS_Q0_, mat->SANS_b1_+2.0))/(mat->SANS_b1_+2.0);
+      double sigma2 = (mat->SANS_A2_*std::pow(2.0*k0,        mat->SANS_b2_+2.0))/(mat->SANS_b2_+2.0);
+      double sigma3 = (mat->SANS_A2_*std::pow(mat->SANS_Q0_, mat->SANS_b2_+2.0))/(mat->SANS_b2_+2.0);
+      double r = prn(p->current_seed());
+      double q = 0.0;
+      if (r<sigma1/(sigma1+sigma2-sigma3)){
+        q = std::pow(r*(sigma1+sigma2-sigma3)                *(mat->SANS_b1_+2.0)/mat->SANS_A1_, 1.0/(mat->SANS_b1_+2.0));
+      } else {
+        q = std::pow((r*(sigma1+sigma2-sigma3)-sigma1+sigma3)*(mat->SANS_b2_+2.0)/mat->SANS_A2_, 1.0/(mat->SANS_b2_+2.0));
+      }
+      double mu = 1.0 - 0.5*std::pow(q/k0, 2.0);
+      p->mu_ = mu;
+      //std::cout << mu << "\n";
+      //std::cout<< p->u();
+      p->u() = rotate_angle(p->u(), mu, nullptr, p->current_seed());
+      //std::cout<< p->u()<<"\n";
+      p->event_ = TallyEvent::SCATTER;
+      return;
+  }
+
   // Create fission bank sites. Note that while a fission reaction is sampled,
   // it never actually "happens", i.e. the weight of the particle does not
   // change when sampling fission sites. The following block handles all
@@ -444,7 +467,7 @@ void sample_positron_reaction(Particle* p)
 int sample_nuclide(Particle* p)
 {
   // Sample cumulative distribution function
-  double cutoff = prn(p->current_seed()) * p->macro_xs_.total;
+  double cutoff = prn(p->current_seed()) * (p->macro_xs_.total - p->macro_xs_.SANS);
 
   // Get pointers to nuclide/density arrays
   const auto& mat {model::materials[p->material_]};

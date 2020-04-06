@@ -288,6 +288,47 @@ Material::Material(pugi::xml_node node)
   }
 
   // =======================================================================
+  // READ AND PARSE <sans> TAG FOR SANS THERMAL SCATTERING
+  if (settings::run_CE) {
+    pugi::xml_node sans_node = node.child("sans");
+    std::string units;
+    if (sans_node) {
+        SANS_A1_ = std::stod(get_node_value(sans_node, "A1"));
+        if (SANS_A1_ <= 0.0) {
+              fatal_error("Need to specify a positive A1 constant for SANS on material "
+                + std::to_string(id_) + ".");
+            }
+        SANS_b1_ = std::stod(get_node_value(sans_node, "b1"));
+        //if (SANS_b1_ <= 0.0) {
+        //      fatal_error("Need to specify a positive b1 constant for SANS on material "
+        //        + std::to_string(id_) + ".");
+        //    }
+        SANS_A2_ = std::stod(get_node_value(sans_node, "A2"));
+        if (SANS_A2_ <= 0.0) {
+              fatal_error("Need to specify a positive A2 constant for SANS on material "
+                + std::to_string(id_) + ".");
+            }
+        SANS_b2_ = std::stod(get_node_value(sans_node, "b2"));
+        //if (SANS_b2_ <= 0.0) {
+        //      fatal_error("Need to specify a positive b2 constant for SANS on material "
+        //        + std::to_string(id_) + ".");
+        //    }
+        SANS_Q0_ = std::stod(get_node_value(sans_node, "Q0"));
+        if (SANS_Q0_ <= 0.0) {
+              fatal_error("Need to specify a positive Q0 constant for SANS on material "
+                + std::to_string(id_) + ".");
+            }
+        SANS_sigma0_ = std::stod(get_node_value(sans_node, "sigma0"));
+        std::cout<<id_<<" SANS_sigma_0 " <<SANS_sigma0_<<"\n";
+        if (SANS_sigma0_ <= 0.0) {
+              fatal_error("Need to specify a positive sigma0 constant for SANS on material "
+                + std::to_string(id_) + ".");
+            }
+        hasSANS_ = true;
+      }
+  }
+
+  // =======================================================================
   // READ AND PARSE <sab> TAG FOR THERMAL SCATTERING DATA
   if (settings::run_CE) {
     // Loop over <sab> elements
@@ -742,6 +783,7 @@ void Material::calculate_xs(Particle& p) const
   p.macro_xs_.absorption = 0.0;
   p.macro_xs_.fission = 0.0;
   p.macro_xs_.nu_fission = 0.0;
+  p.macro_xs_.SANS = 0.0;
 
   if (p.type_ == Particle::Type::neutron) {
     this->calculate_neutron_xs(p);
@@ -817,6 +859,28 @@ void Material::calculate_neutron_xs(Particle& p) const
     p.macro_xs_.absorption += atom_density * micro.absorption;
     p.macro_xs_.fission += atom_density * micro.fission;
     p.macro_xs_.nu_fission += atom_density * micro.nu_fission;
+  }
+  // ======================================================================
+  // CALCULATE SANS COMPONENT
+
+  if (hasSANS_){
+      // Calculate SANS component only for low energies
+      if (p.E_ <= 1.0){
+          double k0 = std::sqrt(p.E_/2.072e-3);  // AA^-1
+          p.macro_xs_.SANS = SANS_sigma0_/(2.0*k0*k0)*
+                  ((SANS_A1_*std::pow(SANS_Q0_, SANS_b1_+2.0)/(SANS_b1_+2.0))
+                  +(SANS_A2_*std::pow(2.0*k0,   SANS_b2_+2.0)/(SANS_b2_+2.0))
+                  -(SANS_A2_*std::pow(SANS_Q0_, SANS_b2_+2.0)/(SANS_b2_+2.0)));
+          //std::cout<<id_<<" SANS_sigma0 "<< SANS_sigma0_<<"\n";
+          //std::cout << "1. " << SANS_sigma0_/(2.0*k0*k0) <<"\n";
+          //std::cout << "2. " << (SANS_A1_*std::pow(SANS_Q0_, SANS_b1_+2.0)/(SANS_b1_+2.0)) <<"\n";
+          //std::cout << SANS_A1_ << " " << SANS_Q0_ << " " << SANS_b1_ <<"\n";
+          //std::cout << "3. " << (SANS_A2_*std::pow(2.0*k0,   SANS_b2_+2.0)/(SANS_b2_+2.0)) <<"\n";
+          //std::cout << "4. " << -(SANS_A2_*std::pow(SANS_Q0_, SANS_b2_+2.0)/(SANS_b2_+2.0)) <<"\n";
+      }
+      p.macro_xs_.total += p.macro_xs_.SANS;
+      //std::cout << "E = "<<p.E_<<", SANS = "  <<p.macro_xs_.SANS ;
+      //std::cout << ", total = "  <<p.macro_xs_.total << "\n";
   }
 }
 

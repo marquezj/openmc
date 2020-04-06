@@ -123,6 +123,8 @@ struct MacroXS {
   double fission;       //!< macroscopic fission xs
   double nu_fission;    //!< macroscopic production xs
   double photon_prod;   //!< macroscopic photon production xs
+  double SANS;          //!< macroscopic SANS xs
+
 
   // Photon cross sections
   double coherent;        //!< macroscopic coherent xs

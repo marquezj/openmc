@@ -36,6 +36,7 @@ _THERMAL_NAMES = {
     'c_Be_in_Be2C': ('bebe2c',),
     'c_C6H6': ('benz', 'c6h6'),
     'c_C_in_SiC': ('csic', 'c-sic'),
+    'c_C_NanoDiamond': ('nanodm',),
     'c_Ca_in_CaH2': ('cah', 'cah00'),
     'c_D_in_D2O': ('dd2o', 'd-d2o', 'hwtr', 'hw', 'dhw00'),
     'c_D_in_D2O_ice': ('dice',),

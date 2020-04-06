@@ -145,6 +145,14 @@ public:
   bool depletable_ {false}; //!< Is the material depletable?
   std::vector<bool> p0_; //!< Indicate which nuclides are to be treated with iso-in-lab scattering
 
+  double SANS_A1_; //!< A1 constant for SANS
+  double SANS_b1_; //!< b1 constant for SANS
+  double SANS_A2_; //!< A2 constant for SANS
+  double SANS_b2_; //!< b2 constant for SANS
+  double SANS_Q0_; //!< Q0 constant for SANS
+  double SANS_sigma0_; //!< sigma0 constant for SANS
+  bool hasSANS_ {false}; //!< Indicate that material has SANS model
+
   // To improve performance of tallying, we store an array (direct address
   // table) that indicates for each nuclide in data::nuclides the index of the
   // corresponding nuclide in the nuclide_ vector. If it is not present in the

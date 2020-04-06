@@ -115,6 +115,11 @@ class Material(IDManagerMixin):
         # If specified, a list of table names
         self._sab = []
 
+        # If specified, parameters for the SANS model
+        self._hasSANS = False
+
+        self._SANS_params = {}
+
     def __repr__(self):
         string = 'Material\n'
         string += '{: <16}=\t{}\n'.format('\tID', self._id)
@@ -128,6 +133,9 @@ class Material(IDManagerMixin):
 
         for sab in self._sab:
             string += '{: <16}=\t{}\n'.format('\tS(a,b)', sab)
+
+        if self._hasSANS:
+            string += '{: <16}\n'.format('\tHas SANS parameters')
 
         string += '{: <16}\n'.format('\tNuclides')
 
@@ -688,6 +696,52 @@ class Material(IDManagerMixin):
 
         self._sab.append((new_name, fraction))
 
+    def add_SANS(self, A1=124.765608253, b1=-1.34851482145, \
+                       A2=0.0538809235316, b2=-3.94708223161, \
+                       Q0=0.05072086107171627, sigma0=0.1671):
+        r"""Add parameters for a simple SANS model to the material
+
+        Parameters
+        ----------
+        A1 : float
+        b1 : float
+        A2 : float
+        b2 : float
+        Q0 : float
+        sigma0 : float
+            
+            The structure factor :math:`I(Q)` is described as two functions:
+            :math:`A_1 Q^{b1}` if :math:`Q<Q_0` else :math:`A_2 Q^{b2}`.
+            :math:`\sigma_0` is the macroscopic bound scattering cross
+            section of the nanoparticles.
+
+        """
+
+        if self._macroscopic is not None:
+            msg = 'Unable to add SANS parameters to Material ID="{}" as a ' \
+                  'macroscopic data-set has already been added'.format(self._id)
+            raise ValueError(msg)
+
+        if self._hasSANS:
+            msg = 'Unable to add SANS parameters to Material ID="{}": ' \
+                        'already loaded'.format(self._id)
+            raise ValueError(msg)
+
+        cv.check_type('SANS A1', A1, Real)
+        cv.check_type('SANS b1', b1, Real)
+        cv.check_type('SANS A2', A2, Real)
+        cv.check_type('SANS b2', b2, Real)
+        cv.check_type('SANS Q0', Q0, Real)
+        cv.check_type('SANS sigma0', sigma0, Real)
+
+        self._hasSANS = True
+        self._SANS_params['A1'] = A1
+        self._SANS_params['b1'] = b1
+        self._SANS_params['A2'] = A2
+        self._SANS_params['b2'] = b2
+        self._SANS_params['Q0'] = Q0
+        self._SANS_params['sigma0'] = sigma0
+
     def make_isotropic_in_lab(self):
         self.isotropic = [x.name for x in self._nuclides]
 
@@ -970,6 +1024,15 @@ class Material(IDManagerMixin):
                 subelement.set("name", sab[0])
                 if sab[1] != 1.0:
                     subelement.set("fraction", str(sab[1]))
+
+        if self._hasSANS:
+            subelement = ET.SubElement(element, "sans")
+            subelement.set("A1", str(self._SANS_params["A1"]))
+            subelement.set("b1", str(self._SANS_params["b1"]))
+            subelement.set("A2", str(self._SANS_params["A2"]))
+            subelement.set("b2", str(self._SANS_params["b2"]))
+            subelement.set("Q0", str(self._SANS_params["Q0"]))
+            subelement.set("sigma0", str(self._SANS_params["sigma0"]))
 
         if self._isotropic:
             subelement = ET.SubElement(element, "isotropic")
