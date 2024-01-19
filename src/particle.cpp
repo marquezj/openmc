@@ -147,6 +147,7 @@ void Particle::event_calculate_xs()
   E_last() = E();
   u_last() = u();
   r_last() = r();
+  r_history().push_back(r_last());
   time_last() = time();
 
   // Reset event variables

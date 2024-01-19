@@ -32,6 +32,7 @@ enum class FilterType {
   LEGENDRE,
   MATERIAL,
   MATERIALFROM,
+  ADJOINTMESH,
   MESH,
   MESH_SURFACE,
   MU,

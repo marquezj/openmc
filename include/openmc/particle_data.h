@@ -275,6 +275,7 @@ private:
   Position r_last_;         //!< previous coordinates
   Direction u_last_;        //!< previous direction coordinates
   double wgt_last_ {1.0};   //!< pre-collision particle weight
+  vector<Position> r_history_;         //!< position history
 
   // What event took place
   bool fission_ {false};  //!< did particle cause implicit fission
@@ -413,6 +414,8 @@ public:
   const Position& u_last() const { return u_last_; }
   double& wgt_last() { return wgt_last_; }
   const double& wgt_last() const { return wgt_last_; }
+  vector<Position>& r_history() { return r_history_; }
+  const vector<Position>& r_history() const { return r_history_; }
 
   bool& fission() { return fission_; }
   TallyEvent& event() { return event_; }
