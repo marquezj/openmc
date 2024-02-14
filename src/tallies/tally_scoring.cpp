@@ -2243,7 +2243,7 @@ void score_analog_tally_ce(Particle& p)
   // Note that the heating score does NOT use the flux and will be non-zero for
   // electrons/positrons.
   double flux =
-    (p.type() == ParticleType::neutron || p.type() == ParticleType::photon)
+    (p.type() == ParticleType::neutron || p.type() == ParticleType::neutron_contributon || p.type() == ParticleType::photon)
       ? 1.0
       : 0.0;
 

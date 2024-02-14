@@ -1,5 +1,5 @@
-#ifndef OPENMC_TALLIES_FILTER_ADJOINTMESH_H
-#define OPENMC_TALLIES_FILTER_ADJOINTMESH_H
+#ifndef OPENMC_TALLIES_FILTER_ADJOINTSOURCEMESH_H
+#define OPENMC_TALLIES_FILTER_ADJOINTSOURCEMESH_H
 
 #include <cstdint>
 
@@ -14,18 +14,18 @@ namespace openmc {
 //! correspond to the fraction of the track length that lies in that bin.
 //==============================================================================
 
-class AdjointMeshFilter : public MeshFilter {
+class AdjointSourceMeshFilter : public MeshFilter {
 public:
   //----------------------------------------------------------------------------
   // Constructors, destructors
 
-  ~AdjointMeshFilter() = default;
+  ~AdjointSourceMeshFilter() = default;
 
   //----------------------------------------------------------------------------
   // Methods
 
-  std::string type_str() const override { return "adjointmesh"; }
-  FilterType type() const override { return FilterType::ADJOINTMESH; }
+  std::string type_str() const override { return "adjointsourcemesh"; }
+  FilterType type() const override { return FilterType::ADJOINTSOURCEMESH; }
 
   void get_all_bins(const Particle& p, TallyEstimator estimator,
     FilterMatch& match) const override;
@@ -40,4 +40,4 @@ protected:
 };
 
 } // namespace openmc
-#endif // OPENMC_TALLIES_FILTER_ADJOINTMESH_H
+#endif // OPENMC_TALLIES_FILTER_ADJOINTSOURCEMESH_H
